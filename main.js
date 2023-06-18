@@ -1,4 +1,4 @@
-//Armamos la funcion para convertir de pesos uy a pesos arg
+//Armamos la funcion para convertir de pesos uy a pesos arg o dolares
 function convertir() {
     let cantidad = parseFloat(document.getElementById("cantidad").value);
     let conversion = document.getElementById("conversion").value;
