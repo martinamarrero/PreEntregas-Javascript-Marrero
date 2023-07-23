@@ -1,24 +1,23 @@
-// Definimos un array para almacenar las conversiones y luego mostrarlas en el historial
-let conversiones = [];
+//Constantes 
+const tasaCambioArgentinos = 6.53;
+const tasaCambioDolares = 0.026;
 
-// Armamos la función para convertir de pesos uy a pesos arg o dólares
+// Función para convertir y manejar el historial de conversiones
 function convertir() {
   let cantidad = parseFloat(document.getElementById("cantidad").value);
   let conversion = document.getElementById("conversion").value;
-  let tasaCambioArgentinos = 6.53; // Tasa de cambio aproximada a pesos argentinos
-  let tasaCambioDolares = 0.026; // Tasa de cambio aproximada a dólares
 
   let resultado;
   let tipoConversion;
-  if (conversion === "argentinos" && cantidad > 0) {
+  if (isNaN(cantidad) || cantidad <= 0) {
+    resultado = 0;
+    tipoConversion = "Inválido";
+  } else if (conversion === "argentinos") {
     resultado = cantidad * tasaCambioArgentinos;
     tipoConversion = "Pesos Argentinos";
-  } else if (conversion === "dolares" && cantidad > 0) {
+  } else if (conversion === "dolares") {
     resultado = cantidad * tasaCambioDolares;
     tipoConversion = "Dólares";
-  } else {
-    resultado = 0;
-    tipoConversion = "Invalido";
   }
 
   //Objeto
@@ -26,35 +25,58 @@ function convertir() {
     cantidad: cantidad,
     tipo: tipoConversion,
     resultado: resultado,
+    fecha: new Date().toLocaleString() // Agregamos la fecha de la conversión
   };
 
-  // Agregamos el objeto de conversión al array de conversiones
-  conversiones.push(conversionObjeto);
+  // Obtenemos el historial de conversiones almacenado en localStorage (si existe)
+  let historialGuardado = JSON.parse(localStorage.getItem("historial") || "[]");
 
-  // Mostramos el historial de conversiones
-  let historialConver = document.getElementById("historial");
-  historialConver.innerHTML = "<h3>Historial de Conversiones</h3>";
-  let listaConversiones = document.createElement("ul");
-  conversiones.forEach(function (conversion) {
-    let nuevaConversion = document.createElement("li");
-    nuevaConversion.textContent = conversion.cantidad + " Pesos Uruguayos => " + conversion.resultado + " " + conversion.tipo;
-    listaConversiones.appendChild(nuevaConversion);
-  });
-  historialConver.appendChild(listaConversiones);
-  document.getElementById("resultado").innerHTML = resultado + " " + tipoConversion;
+  // Agregamos la nueva conversión al historial
+  historialGuardado.push(conversionObjeto);
 
-
-  // Buscar una conversión específica utilizando el método find()
-  let conversionEncontrada = conversiones.find(function (conversion) {
-    return conversion.tipo === "Pesos Argentinos";
-  });
-  if (conversionEncontrada) {
-    console.log("Conversión encontrada:", conversionEncontrada);
-  }
+  // Guardar el historial actualizado en localStorage
+  localStorage.setItem("historial", JSON.stringify(historialGuardado));
+  mostrarHistorial(historialGuardado);
   document.getElementById("resultado").innerHTML = resultado + " " + tipoConversion;
 }
 
+// Función mostrar el historial de conversiones
+function mostrarHistorial(historial) {
+  let historialConver = document.getElementById("historial");
+  historialConver.innerHTML = "<h3>Historial de Conversiones</h3>";
+
+  let listaConversiones = document.createElement("ul");
+  historial.forEach(function (conversion) {
+    let nuevaConversion = document.createElement("li");
+    nuevaConversion.textContent = conversion.cantidad + " Pesos Uruguayos => " + conversion.resultado + " " + conversion.tipo + " (" + conversion.fecha + ")";
+    listaConversiones.appendChild(nuevaConversion);
+  });
+
+  historialConver.appendChild(listaConversiones);
+}
+
+// Función para activar el modo oscuro y guardar la selección en localStorage
 function activarModoOscuro() {
   var body = document.body;
   body.classList.toggle("modo-oscuro");
+
+  // Guardar la selección del modo oscuro en el almacenamiento local
+  let modoOscuroSeleccionado = body.classList.contains("modo-oscuro");
+  localStorage.setItem("modoOscuro", modoOscuroSeleccionado);
 }
+
+// Cargar el historial y la selección del modo oscuro al cargar la página
+document.addEventListener("DOMContentLoaded", function () {
+  let historialGuardado = JSON.parse(localStorage.getItem("historial") || "[]");
+  mostrarHistorial(historialGuardado);
+
+  // Obtener la selección del modo oscuro desde el almacenamiento local
+  let modoOscuroSeleccionado = JSON.parse(localStorage.getItem("modoOscuro")) || false;
+  var body = document.body;
+
+  if (modoOscuroSeleccionado) {
+    body.classList.add("modo-oscuro");
+  } else {
+    body.classList.remove("modo-oscuro");
+  }
+});
