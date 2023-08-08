@@ -1,43 +1,58 @@
-//Constantes 
-const tasaCambioArgentinos = 6.53;
-const tasaCambioDolares = 0.026;
+//Sacamos las constantes para utilizar el archivo JSON local
+/* const tasaCambioArgentinos = 6.53;
+const tasaCambioDolares = 0.026; */
 
 // Función para convertir y manejar el historial de conversiones
 function convertir() {
-  let cantidad = parseFloat(document.getElementById("cantidad").value);
-  let conversion = document.getElementById("conversion").value;
+  // Cargar el archivo JSON local
+  fetch('tipo_cambio.json')
+    .then(response => response.json())
+    .then(tasasCambio => {
+      let cantidad = parseFloat(document.getElementById("cantidad").value);
+      let conversion = document.getElementById("conversion").value;
 
-  let resultado;
-  let tipoConversion;
-  if (isNaN(cantidad) || cantidad <= 0) {
-    resultado = 0;
-    tipoConversion = "Inválido";
-  } else if (conversion === "argentinos") {
-    resultado = cantidad * tasaCambioArgentinos;
-    tipoConversion = "Pesos Argentinos";
-  } else if (conversion === "dolares") {
-    resultado = cantidad * tasaCambioDolares;
-    tipoConversion = "Dólares";
-  }
+      let resultado;
+      let tipoConversion;
+      if (isNaN(cantidad) || cantidad <= 0) {
+        resultado = 0;
+        tipoConversion = "Inválido";
+      } else if (conversion === "argentinos") {
+        resultado = cantidad * tasasCambio.argentinos;
+        tipoConversion = "Pesos Argentinos";
+      } else if (conversion === "dolares") {
+        resultado = cantidad * tasasCambio.dolares;
+        tipoConversion = "Dólares";
+      }
 
-  //Objeto
-  let conversionObjeto = {
-    cantidad: cantidad,
-    tipo: tipoConversion,
-    resultado: resultado,
-    fecha: new Date().toLocaleString() // Agregamos la fecha de la conversión
-  };
+      // Objeto
+      let conversionObjeto = {
+        cantidad: cantidad,
+        tipo: tipoConversion,
+        resultado: resultado,
+        fecha: new Date().toLocaleString() // Agregamos la fecha de la conversión
+      };
 
-  // Obtenemos el historial de conversiones almacenado en localStorage (si existe)
-  let historialGuardado = JSON.parse(localStorage.getItem("historial") || "[]");
+      // Obtenemos el historial de conversiones almacenado en localStorage (si existe)
+      let historialGuardado = JSON.parse(localStorage.getItem("historial") || "[]");
 
-  // Agregamos la nueva conversión al historial
-  historialGuardado.push(conversionObjeto);
+      // Agregamos la nueva conversión al historial
+      historialGuardado.push(conversionObjeto);
 
-  // Guardar el historial actualizado en localStorage
-  localStorage.setItem("historial", JSON.stringify(historialGuardado));
-  mostrarHistorial(historialGuardado);
-  document.getElementById("resultado").innerHTML = resultado + " " + tipoConversion;
+      // Guardar el historial actualizado en localStorage
+      localStorage.setItem("historial", JSON.stringify(historialGuardado));
+      mostrarHistorial(historialGuardado);
+      document.getElementById("resultado").innerHTML = resultado + " " + tipoConversion;
+
+      // Mostrar SweetAlert cuando se realiza la conversión
+      Swal.fire({
+        icon: 'success',
+        title: 'Perfecto...',
+        text: '¡Conversión exitosa!',
+      });
+    })
+    .catch(error => {
+      console.error("Error al cargar el archivo JSON:", error);
+    });
 }
 
 // Función mostrar el historial de conversiones
